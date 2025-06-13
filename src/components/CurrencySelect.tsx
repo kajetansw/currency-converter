@@ -1,32 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCurrencies } from "../context/queries/getCurrencies";
 import { isEmpty } from "../utils/isEmpty";
+import { useExchange } from "../context/exchange/exchange";
+import { useConvertion } from "../hooks/useConvertion";
 
 interface CurrencySelectProps {
-  value: string;
-  onChange: (currency: string) => void;
+  type: "from" | "to";
 }
 
-export const CurrencySelect = ({ value, onChange }: CurrencySelectProps) => {
+export const CurrencySelect = ({ type }: CurrencySelectProps) => {
   const currencies = useQuery({
     queryKey: ["currencies"],
     queryFn: getCurrencies,
+    initialData: { response: [] },
   });
+
+  const exchange = useExchange();
+  const { convert } = useConvertion(type);
 
   return (
     <select
-      value={value}
-      disabled={isEmpty(currencies.data?.response)}
+      value={exchange[type].currency.value}
+      disabled={isEmpty(currencies.data.response)}
       onChange={(e) => {
-        onChange(e.target.value);
+        const currency = e.target.value;
+
+        exchange[type].currency.set(currency);
+        convert({ currency, amount: exchange[type].amount.value });
       }}
     >
-      {(currencies.data?.response ?? [])
-        // TODO temp for testing
-        .filter((c) => ["USD", "PLN"].includes(c.short_code))
-        .map((c) => (
-          <option key={c.short_code}>{c.short_code}</option>
-        ))}
+      {currencies.data.response.map((c) => (
+        <option key={c.short_code}>{c.short_code}</option>
+      ))}
     </select>
   );
 };

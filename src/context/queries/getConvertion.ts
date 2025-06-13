@@ -4,13 +4,13 @@ import { getApiPath } from "./getApiPath";
 type GetConvertResponse = Conversion;
 
 export const getConvertion = (options: {
-  fromCurrency: string;
-  toCurrency: string;
+  inputCurrency: string;
+  outputCurrency: string;
   amount: string;
 }) => {
-  const { fromCurrency, toCurrency, amount } = options;
+  const { inputCurrency, outputCurrency, amount } = options;
 
   return fetch(
-    `${getApiPath("/convert")}&from=${fromCurrency}&to=${toCurrency}&amount=${amount}`,
+    `${getApiPath("/convert")}&from=${inputCurrency}&to=${outputCurrency}&amount=${amount}`,
   ).then((r) => r.json()) as Promise<GetConvertResponse>;
 };
