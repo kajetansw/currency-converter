@@ -1,140 +1,110 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getCurrencies } from "./context/queries/getCurrencies";
+import { useMutation } from "@tanstack/react-query";
 import { getConvertion } from "./context/queries/getConvertion";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { CurrencySelect } from "./components/CurrencySelect";
+import { AmountInput } from "./components/AmountInput";
 
 import "./App.css";
 
 export const App = () => {
   const lastModified = useRef<"from" | "to" | null>(null);
 
-  const fromAmountRef = useRef<HTMLInputElement>(null);
-  const toAmountRef = useRef<HTMLInputElement>(null);
+  const [fromAmount, setFromAmount] = useState("");
+  const [toAmount, setToAmount] = useState("");
 
-  const fromCurrencyRef = useRef<HTMLSelectElement>(null);
-  const toCurrencyRef = useRef<HTMLSelectElement>(null);
-
-  const currencies = useQuery({
-    queryKey: ["currencies"],
-    queryFn: getCurrencies,
-  });
+  const [fromCurrency, setFromCurrency] = useState("PLN");
+  const [toCurrency, setToCurrency] = useState("PLN");
 
   const convertion = useMutation({
     mutationFn: getConvertion,
   });
 
-  useEffect(() => {
-    if (convertion.data) {
-      const newAmount = String(convertion.data.value);
+  const convertionOutput = convertion.data?.value;
 
-      if (lastModified.current === "from" && toAmountRef.current) {
-        toAmountRef.current.value = newAmount;
+  useEffect(() => {
+    if (convertionOutput) {
+      const newAmount = String(convertionOutput);
+
+      if (lastModified.current === "from") {
+        setToAmount(newAmount);
       }
-      if (lastModified.current === "to" && fromAmountRef.current) {
-        fromAmountRef.current.value = newAmount;
+      if (lastModified.current === "to") {
+        setFromAmount(newAmount);
       }
     }
-  }, [convertion.data?.value]);
+  }, [convertionOutput]);
 
-  const convert = (direction: "from" | "to") => {
-    const fromCurrency = fromCurrencyRef.current?.value;
-    const toCurrency = toCurrencyRef.current?.value;
-    const amount =
-      direction === "from"
-        ? fromAmountRef.current?.value
-        : toAmountRef.current?.value;
+  const convert = (
+    direction: "from" | "to",
+    options: { currency: string; amount: string },
+  ) => {
+    const amount = options.amount;
+    const inputCurrency = options.currency;
+    const outputCurrency = direction === "from" ? toCurrency : fromCurrency;
 
-    const convertionEnabled = !!fromCurrency && !!toCurrency && !!amount;
+    const convertionEnabled = !!inputCurrency && !!outputCurrency && !!amount;
 
     if (convertionEnabled) {
-      const options =
-        direction === "from"
-          ? { fromCurrency, toCurrency, amount }
-          : { fromCurrency: toCurrency, toCurrency: fromCurrency, amount };
-
-      convertion.mutate(options);
+      convertion.mutate({
+        fromCurrency: inputCurrency,
+        toCurrency: outputCurrency,
+        amount,
+      });
     }
   };
 
   const resetAmounts = () => {
-    if (fromAmountRef.current) {
-      fromAmountRef.current.value = "";
-    }
-    if (toAmountRef.current) {
-      toAmountRef.current.value = "";
-    }
+    setFromAmount("");
+    setToAmount("");
   };
 
   return (
     <>
       <div>
-        <input
-          type="number"
-          ref={fromAmountRef}
-          onChange={(e) => {
+        <AmountInput
+          value={fromAmount}
+          onChange={(amount) => {
             lastModified.current = "from";
-            if (e.target.value) {
-              convert("from");
+            if (amount) {
+              setFromAmount(amount);
+              convert("from", { amount, currency: fromCurrency });
             } else {
               resetAmounts();
             }
           }}
         />
-        <select
-          name="fromCurrency"
-          ref={fromCurrencyRef}
-          disabled={isEmpty(currencies.data?.response)}
-          onChange={() => {
+        <CurrencySelect
+          value={fromCurrency}
+          onChange={(currency) => {
             lastModified.current = "from";
-            convert("from");
+            setFromCurrency(currency);
+            convert("from", { currency, amount: fromAmount });
           }}
-        >
-          {(currencies.data?.response ?? [])
-            // TODO temp for testing
-            .filter((c) => ["USD", "PLN"].includes(c.short_code))
-            .map((c) => (
-              <option key={c.short_code}>{c.short_code}</option>
-            ))}
-        </select>
+        />
       </div>
 
       <div>
-        <input
-          type="number"
-          ref={toAmountRef}
-          onChange={(e) => {
+        <AmountInput
+          value={toAmount}
+          onChange={(amount) => {
             lastModified.current = "to";
-            if (e.target.value) {
-              convert("to");
+            if (amount) {
+              setToAmount(amount);
+              convert("to", { amount, currency: toCurrency });
             } else {
               resetAmounts();
             }
           }}
         />
-        <select
-          name="toCurrency"
-          ref={toCurrencyRef}
-          disabled={isEmpty(currencies.data?.response)}
-          onChange={() => {
+        <CurrencySelect
+          value={toCurrency}
+          onChange={(currency) => {
             lastModified.current = "to";
-            convert("to");
+            setToCurrency(currency);
+            convert("to", { currency, amount: toAmount });
           }}
-        >
-          {(currencies.data?.response ?? [])
-            // TODO temp for testing
-            .filter((c) => ["USD", "PLN"].includes(c.short_code))
-            .map((c) => (
-              <option key={c.short_code}>{c.short_code}</option>
-            ))}
-        </select>
+        />
       </div>
     </>
   );
 };
-
-/*
- * utils
- */
-
-const isEmpty = (value: unknown) =>
-  !value || (Array.isArray(value) && value.length === 0);
