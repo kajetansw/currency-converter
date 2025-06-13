@@ -1,9 +1,11 @@
 import type { Currency } from "../../models/types";
 import { getApiPath } from "./getApiPath";
 
-type GetCurrenciesResponse = Currency[];
+type GetCurrenciesResponse = {
+  response: Currency[];
+};
 
-export const getCurrenciesQueryFn = () => () =>
+export const getCurrencies = () =>
   fetch(`${getApiPath("/currencies")}`).then((r) =>
     r.json(),
   ) as Promise<GetCurrenciesResponse>;

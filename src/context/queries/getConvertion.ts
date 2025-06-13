@@ -3,15 +3,14 @@ import { getApiPath } from "./getApiPath";
 
 type GetConvertResponse = Conversion;
 
-export const getConvertQueryFn = (options: {
+export const getConvertion = (options: {
   fromCurrency: string;
   toCurrency: string;
   amount: number;
 }) => {
   const { fromCurrency, toCurrency, amount } = options;
 
-  return () =>
-    fetch(
-      `${getApiPath("/convert")}&from=${fromCurrency}&to=${toCurrency}&amount=${amount}`,
-    ).then((r) => r.json()) as Promise<GetConvertResponse>;
+  return fetch(
+    `${getApiPath("/convert")}&from=${fromCurrency}&to=${toCurrency}&amount=${amount}`,
+  ).then((r) => r.json()) as Promise<GetConvertResponse>;
 };
