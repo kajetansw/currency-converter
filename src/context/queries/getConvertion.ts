@@ -6,7 +6,7 @@ type GetConvertResponse = Conversion;
 export const getConvertion = (options: {
   fromCurrency: string;
   toCurrency: string;
-  amount: number;
+  amount: string;
 }) => {
   const { fromCurrency, toCurrency, amount } = options;
 
