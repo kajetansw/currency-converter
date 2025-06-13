@@ -50,3 +50,9 @@ npm run dev
 ## API Reference
 
 This project uses [Currency Beacon API](https://currencybeacon.com/api-documentation) for fetching currencies and convertions.
+
+## Architecture design choices
+
+If you find the solution a bit bloated in terms of lines of code, then yes, it probably is.
+
+I implemented two solutions (other one is on the `feat/using-state` branch), but decided to put forward this intentionally. I think that despite more lines of code, all of components, hooks and logic are more readable, managable and composable with this solution.
