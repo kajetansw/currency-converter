@@ -19,3 +19,14 @@ export interface Conversion {
   amount: number;
   value: number;
 }
+
+export interface ConversionHistory {
+  from: {
+    currency: string;
+    amount: string;
+  };
+  to: {
+    currency: string;
+    amount: string;
+  };
+}

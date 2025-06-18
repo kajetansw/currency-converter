@@ -18,9 +18,29 @@ export const useConvertion = (direction: "from" | "to") => {
 
       if (direction === "from") {
         exchange.to.amount.set(newAmount);
+        exchange.history.set({
+          from: {
+            amount: exchange.from.amount.value,
+            currency: exchange.from.currency.value,
+          },
+          to: {
+            amount: newAmount,
+            currency: exchange.to.currency.value,
+          },
+        });
       }
       if (direction === "to") {
         exchange.from.amount.set(newAmount);
+        exchange.history.set({
+          from: {
+            amount: exchange.to.amount.value,
+            currency: exchange.to.currency.value,
+          },
+          to: {
+            amount: newAmount,
+            currency: exchange.from.currency.value,
+          },
+        });
       }
     }
   }, [convertionOutput]);

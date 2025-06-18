@@ -10,6 +10,7 @@ export const AmountInput = ({ type }: AmountInputProps) => {
 
   const exchange = useExchange();
 
+  // TODO implement debounce for user input
   return (
     <input
       type="number"

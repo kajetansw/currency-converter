@@ -1,6 +1,11 @@
 import { createContext, useContext, useState } from "react";
+import type { ConversionHistory } from "../../models/types";
 
 interface ExchangeContextType {
+  history: {
+    value: ConversionHistory[];
+    set: (newValue: ConversionHistory) => void;
+  };
   reset: () => void;
   from: {
     amount: {
@@ -25,6 +30,10 @@ interface ExchangeContextType {
 }
 
 export const initialExchange = {
+  history: {
+    value: [],
+    set: () => undefined,
+  },
   reset: () => undefined,
   from: {
     amount: {
@@ -79,6 +88,20 @@ export const ExchangeContextProvider = ({
     initialExchange.to.currency.value,
   );
 
+  const [history, setHistory] = useState<ConversionHistory[]>(
+    initialExchange.history.value,
+  );
+
+  const setConversionHistory = (newValue: ConversionHistory) => {
+    const maxLength = 5;
+
+    if (history.length < 5) {
+      setHistory((h) => [newValue, ...h]);
+    } else {
+      setHistory((h) => [newValue, ...h.slice(0, maxLength - 1)]);
+    }
+  };
+
   const resetAmounts = () => {
     setFromAmount("");
     setToAmount("");
@@ -86,6 +109,10 @@ export const ExchangeContextProvider = ({
 
   const contextValue: ExchangeContextType = {
     reset: resetAmounts,
+    history: {
+      value: history,
+      set: setConversionHistory,
+    },
     from: {
       amount: {
         value: fromAmount,
